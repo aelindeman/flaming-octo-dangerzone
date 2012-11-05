@@ -86,7 +86,7 @@ public class PostDatabase extends Database {
 	    
 	    p.id = results.getInt("id");
 	    p.author = results.getString("author");
-	    p.date = new Date(results.getInt("date"));
+	    p.date = new Date((long) results.getInt("date"));
 	    p.isPublic = results.getInt("isPublic") == 1;
 	    p.setContent(results.getString("content"));
 	    
@@ -118,7 +118,7 @@ public class PostDatabase extends Database {
 	    
 	    p.id = results.getInt("id");
 	    p.author = results.getString("author");
-	    p.date = new Date(results.getInt("date"));
+	    p.date = new Date((long) results.getInt("date"));
 	    p.isPublic = results.getInt("isPublic") == 1;
 	    p.setContent(results.getString("content"));
 	    
@@ -163,7 +163,7 @@ public class PostDatabase extends Database {
 	st.setQueryTimeout(TIMEOUT);
 
 	// convert date and publicity to fit in the database
-	int date = (int) post.date.getTime();
+	int date = (int) Math.floor(post.date.getTime());
 	int isPublic = post.isPublic ? 1 : 0;
 	
 	st.setString(1, post.author);
