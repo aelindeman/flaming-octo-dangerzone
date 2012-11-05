@@ -7,8 +7,8 @@ import java.sql.*;
  * 
  * @author Alex Lindeman
  */
-public class Database 
-{
+public class Database {
+    
     /**
      * Driver to use
      */
@@ -27,7 +27,7 @@ public class Database
     /**
      * Database connection
      */
-    protected Connection db;
+    protected static Connection db;
 
     /**
      * Default constructor initializes database connection, and creates tables

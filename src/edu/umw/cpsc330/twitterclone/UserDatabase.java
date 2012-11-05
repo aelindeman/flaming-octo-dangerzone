@@ -55,16 +55,16 @@ public class UserDatabase extends Database {
 
     /**
      * Gets user information by username
-     * @param user user to get data for
+     * @param username user to get data for
      * @return User
      * @throws SQLException
      */
-    public User get(String user) throws SQLException {
-	String sql = "SELECT FROM users WHERE username = ?;";
+    public User get(String username) throws SQLException {
+	String sql = "SELECT * FROM users WHERE username = ?;";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
-	st.setString(1, user);
+	st.setString(1, username);
 
 	ResultSet result = st.getResultSet();
 	User u = new User();
@@ -101,16 +101,16 @@ public class UserDatabase extends Database {
 
     /**
      * Removes a user from the database
-     * @param user the user to be deleted
+     * @param id the user to be deleted
      * @return number of rows affected (should be 1 if the deletion was successful)
      * @throws SQLException
      */
-    public int delete(int user) throws SQLException {
+    public int delete(int id) throws SQLException {
 	String sql = "DELETE FROM users WHERE id = ?;";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
-	st.setInt(1, user);
+	st.setInt(1, id);
 
 	st.execute();
 	int result = st.getUpdateCount();

@@ -1,5 +1,7 @@
 package edu.umw.cpsc330.twitterclone;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -8,6 +10,7 @@ import java.util.Date;
  * @author Alex Lindeman
  */
 public class Post {
+    
     /**
      * ID of the post.
      */
@@ -48,6 +51,18 @@ public class Post {
     public Post(String content) {
 	date = new Date();
 	setContent(content);
+    }
+    
+    /**
+     * Returns the post as a string.
+     * @return post as a String
+     */
+    public String toString() {
+	// format the date
+	Format f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	String d = f.format(this.date);
+	
+	return author + " - " + content + " (" + d + ")";
     }
 
     /**

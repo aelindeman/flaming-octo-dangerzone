@@ -44,26 +44,33 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public Post getByID(int id) throws SQLException {
-	String sql = "SELECT FROM posts WHERE id = ?;";
+	String sql = "SELECT * FROM posts WHERE id = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
-
 	st.setInt(1, id);
-
-	ResultSet result = st.getResultSet();
-	Post p = new Post();
 	
-	// reformat data that had to be converted to fit in the database
-	Date date = new Date(result.getInt("date"));
-	boolean isPublic = result.getInt("isPublic") == 1;
-
-	p.id = result.getInt("id");
-	p.author = result.getString("author");
-	p.date = date;
-	p.isPublic = isPublic;
-	p.setContent(result.getString("content"));
-
-	return p;
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	
+	// there should only be 1 element in the list, or we have duped IDs
+	assert (parsed.size() == 1);
+	return parsed.get(0);
+    }
+    
+    /**
+     * Gets all posts
+     * @return List of posts
+     * @throws SQLException
+     */
+    public List<Post> getAll() throws SQLException {
+	String sql = "SELECT * FROM posts ORDER BY date DESC LIMIT ?";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+	st.setInt(1, LIMIT);
+	
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
     }
 
     /**
@@ -72,28 +79,14 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public List<Post> getAllPublic() throws SQLException {
-	String sql = "SELECT FROM posts WHERE isPublic = 1 ORDER BY date DESC LIMIT ?;";
+	String sql = "SELECT * FROM posts WHERE isPublic = 1 ORDER BY date DESC LIMIT ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
-	
 	st.setInt(1, LIMIT);
 	
-	ResultSet results = st.getResultSet();
-	List<Post> postList = new LinkedList<Post>();
-	
-	while (results.next()) {
-	    Post p = new Post();
-	    
-	    p.id = results.getInt("id");
-	    p.author = results.getString("author");
-	    p.date = new Date((long) results.getInt("date"));
-	    p.isPublic = results.getInt("isPublic") == 1;
-	    p.setContent(results.getString("content"));
-	    
-	    postList.add(p);
-	}
-	
-	return postList;
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
     }
 
     /**
@@ -103,29 +96,16 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public List<Post> getByAuthor(String user) throws SQLException {
-	String sql = "SELECT FROM posts WHERE author = ? ORDER BY date DESC LIMIT ?;";
+	String sql = "SELECT * FROM posts WHERE author = ? ORDER BY date DESC LIMIT ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 	
 	st.setString(1, user);
 	st.setInt(2, LIMIT);
 	
-	ResultSet results = st.getResultSet();
-	List<Post> postList = new LinkedList<Post>();
-	
-	while (results.next()) {
-	    Post p = new Post();
-	    
-	    p.id = results.getInt("id");
-	    p.author = results.getString("author");
-	    p.date = new Date((long) results.getInt("date"));
-	    p.isPublic = results.getInt("isPublic") == 1;
-	    p.setContent(results.getString("content"));
-	    
-	    postList.add(p);
-	}
-	
-	return postList;
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
     }
 
     /**
@@ -150,6 +130,32 @@ public class PostDatabase extends Database {
     public List<Post> getByHashtag(String hashtag) throws SQLException {
 	return null;
     }
+    
+    /**
+     * Iterates through a ResultSet and converts it to a list
+     * @param results Results of a SQL query
+     * @return List of posts
+     * @throws SQLException
+     */
+    private static List<Post> parseResults(ResultSet results) throws SQLException {
+	List<Post> postList = new LinkedList<Post>();
+
+	while (results.next()) {
+	    Post p = new Post();
+
+	    p.id = results.getInt("id");
+	    p.author = results.getString("author");
+	    long date = results.getInt("date") * 1000L; // milliseconds
+	    p.isPublic = results.getInt("isPublic") == 1;
+	    p.setContent(results.getString("content"));
+
+	    p.date = new Date(date);
+
+	    postList.add(p);
+	}
+
+	return postList;
+    }
 
     /**
      * Adds a post to the database
@@ -158,12 +164,12 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public int add(Post post) throws SQLException {
-	String sql = "INSERT INTO users VALUES ( null, ?, ?, ?, ? );";
+	String sql = "INSERT INTO posts VALUES ( null, ?, ?, ?, ? )";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
 	// convert date and publicity to fit in the database
-	int date = (int) Math.floor(post.date.getTime());
+	int date = (int) Math.floor(post.date.getTime() / 1000);
 	int isPublic = post.isPublic ? 1 : 0;
 	
 	st.setString(1, post.author);
@@ -183,7 +189,7 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public int delete(int id) throws SQLException {
-	String sql = "DELETE FROM posts WHERE id = ?;";
+	String sql = "DELETE FROM posts WHERE id = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
