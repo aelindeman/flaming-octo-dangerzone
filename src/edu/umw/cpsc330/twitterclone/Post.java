@@ -33,12 +33,19 @@ public class Post {
      * author.
      */
     public boolean isPublic;
+    
+    /**
+     * Default constructor
+     */
+    public Post() {
+	
+    }
 
     /**
      * Default constructor
      * @param new_content Sets the contents of the post
      */
-    public Post (String content) {
+    public Post(String content) {
 	date = new Date();
 	setContent(content);
     }
