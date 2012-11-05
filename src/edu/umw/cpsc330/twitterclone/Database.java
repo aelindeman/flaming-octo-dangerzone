@@ -20,21 +20,33 @@ public class Database
 	private static final String URI = "jdbc:sqlite:data.db";
 	
 	/**
+	 * Maximum time allowed for any SQL queries, in seconds
+	 */
+	private static final int TIMEOUT = 30;
+	
+	/**
 	 * Database connection
 	 */
 	private Connection db;
 	
 	/**
-	 * Default constructor initializes database connection
+	 * Default constructor initializes database connection, and creates tables
+	 * if they don't exist
 	 */
 	public Database() {
 		try {
+			// initialize connection
 			Class.forName(DRIVER);
 			db = DriverManager.getConnection(URI);
+			
+			// create tables if they don't already exist
+			Statement create = db.createStatement();
+			create.execute("CREATE TABLE IF NOT EXISTS posts ( id INTEGER PRIMARY KEY, author TEXT, date INTEGER, isPublic INTEGER, content TEXT );");
+			create.execute("CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY, username TEXT, pwhash TEXT, name TEXT, bio TEXT );");
 		} catch (ClassNotFoundException e) {
 			System.err.println("Caught exception while attempting to use database driver: " + e.getMessage());
 		} catch (SQLException e) {
-			System.err.println("Caught exception while connecting to database: " + e.getMessage());
+			System.err.println("Caught exception while doing something to the database: " + e.getMessage());
 		}
 	}
 	
@@ -43,14 +55,15 @@ public class Database
 	 * @param query SQL query
 	 * @return results from query
 	 */
-	public ResultSet query(String query) throws SQLException
-	{
+	public ResultSet query(String query) throws SQLException {
 		Statement st = db.createStatement();
-		st.setQueryTimeout(30);
+		st.setQueryTimeout(TIMEOUT);
 		
-		ResultSet result = st.executeQuery(query);
-		
-		return result;
+		// return a ResultSet if there were any results, null if not
+		boolean result = st.execute(query);
+		return result ?
+				st.getResultSet() :
+					null;
 	}
 	
 	/**
