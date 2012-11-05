@@ -6,17 +6,17 @@ package edu.umw.cpsc330.twitterclone;
  * @author Alex Lindeman
  */
 public class User {
-	
-	/**
-	 * User ID number (SQL unique key)
-	 */
+
+    /**
+     * User ID number (SQL unique key)
+     */
     public int id;
-    
+
     /**
      * Unique username of the user
      */
     public String username;
-    
+
     /**
      * SHA1 hash of the user's password
      */
@@ -26,7 +26,7 @@ public class User {
      * Display name of the user
      */
     public String name;
-    
+
     /**
      * Short biography of the user to display on their profile
      */
@@ -35,8 +35,16 @@ public class User {
     /**
      * Default constructor
      */
-    public User (String username, String name) {
-    	this.username = username;
-    	this.name = name;
+    public User() {
+	
+    }
+    
+    /**
+     * Default constructor
+     * @param username
+     * @param name
+     */
+    public User (String username) {
+	this.username = username;
     }
 }
