@@ -20,7 +20,7 @@ public class UserDatabase extends Database {
 
 	    // create user table if it doesn't already exist
 	    Statement create = db.createStatement();
-	    create.execute("CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY, username TEXT UNIQUE, pwhash TEXT, name TEXT, bio TEXT );");
+	    create.execute("CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY, username TEXT UNIQUE, pwhash TEXT, name TEXT, bio TEXT, following TEXT );");
 	} catch (ClassNotFoundException e) {
 	    System.err.println("Caught exception while attempting to use database driver: " + e.getMessage());
 	} catch (SQLException e) {
@@ -35,7 +35,7 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public User get(int id) throws SQLException {
-	String sql = "SELECT FROM users WHERE id = ?;";
+	String sql = "SELECT FROM users WHERE id = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
@@ -60,7 +60,7 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public User get(String username) throws SQLException {
-	String sql = "SELECT * FROM users WHERE username = ?;";
+	String sql = "SELECT * FROM users WHERE username = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
@@ -85,7 +85,7 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public int add(User user) throws SQLException {
-	String sql = "INSERT INTO users VALUES ( null, ?, ?, ?, ? );";
+	String sql = "INSERT INTO users VALUES ( null, ?, ?, ?, ?, null )";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
@@ -99,6 +99,27 @@ public class UserDatabase extends Database {
 	return result;
     }
 
+    /**
+     * Edits a user in the database
+     * @param user user to edit
+     * @return number of rows affected
+     * @throws SQLException
+     */
+    public int edit(User user) throws SQLException {
+	String sql = "UPDATE users SET ( pwhash = ?, name = ?, bio = ? ) WHERE id = ?";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+
+	st.setString(1, user.pwhash);
+	st.setString(2, user.name);
+	st.setString(3, user.bio);
+	st.setInt(4, user.id);
+
+	st.execute();
+	int result = st.getUpdateCount();
+	return result;
+    }
+    
     /**
      * Removes a user from the database
      * @param id the user to be deleted
@@ -116,25 +137,30 @@ public class UserDatabase extends Database {
 	int result = st.getUpdateCount();
 	return result;
     }
-
+    
     /**
-     * Edits a user in the database
-     * @param user user to edit
+     * Adds a user to the list of the user's followers.
+     * @param user User to modify
+     * @param follow User to follow
      * @return number of rows affected
      * @throws SQLException
      */
-    public int edit(User user) throws SQLException {
-	String sql = "UPDATE users SET ( pwhash = ?, name = ?, bio = ? ) WHERE id = ?;";
-	PreparedStatement st = db.prepareStatement(sql);
-	st.setQueryTimeout(TIMEOUT);
-
-	st.setString(1, user.pwhash);
-	st.setString(2, user.name);
-	st.setString(3, user.bio);
-	st.setInt(4, user.id);
-
-	st.execute();
-	int result = st.getUpdateCount();
-	return result;
+    public int addFollower(User user, String follow) throws SQLException {
+	// UPDATE users SET ( followers = ? ) WHERE id = ?
+	// string traversal among other nonsense
+	return 0;
+    }
+    
+    /**
+     * Removes a user from the list of the user's followers.
+     * @param user User to modify
+     * @param follow User to remove from followers list
+     * @return number of rows affected
+     * @throws SQLException
+     */
+    public int removeFollower(User user, String follow) throws SQLException {
+	// UPDATE users SET ( followers = ? ) WHERE id = ?
+	// string traversal among other nonsense
+	return 0;
     }
 }

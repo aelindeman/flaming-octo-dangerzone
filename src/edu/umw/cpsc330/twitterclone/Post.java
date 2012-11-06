@@ -43,15 +43,6 @@ public class Post {
     public Post() {
 	
     }
-
-    /**
-     * Default constructor
-     * @param new_content Sets the contents of the post
-     */
-    public Post(String content) {
-	date = new Date();
-	setContent(content);
-    }
     
     /**
      * Returns the post as a string.

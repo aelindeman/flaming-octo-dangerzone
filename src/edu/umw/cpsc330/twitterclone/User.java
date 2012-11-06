@@ -1,5 +1,7 @@
 package edu.umw.cpsc330.twitterclone;
 
+import java.util.List;
+
 /**
  * Container class for user accounts.
  * 
@@ -31,20 +33,16 @@ public class User {
      * Short biography of the user to display on their profile
      */
     public String bio;
+    
+    /**
+     * List of users the user is following
+     */
+    public List<User> following;
 
     /**
      * Default constructor
      */
     public User() {
 	
-    }
-    
-    /**
-     * Default constructor
-     * @param username
-     * @param name
-     */
-    public User (String username) {
-	this.username = username;
     }
 }
