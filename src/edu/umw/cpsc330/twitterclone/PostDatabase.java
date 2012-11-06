@@ -121,14 +121,42 @@ public class PostDatabase extends Database {
 	return getByAuthor(resolved.id);
     }
 
-    // TODO: get all posts with an @mention to someone
+    /**
+     * Gets all posts that begin with an "@" mention to a user
+     * @param mention User mentioned
+     * @return List of posts
+     * @throws SQLException
+     */
     public List<Post> getByMention(String mention) throws SQLException {
-	return null;
+	String sql = "SELECT * FROM posts WHERE content LIKE ? ORDER BY date DESC LIMIT ?";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+	
+	st.setString(1, "%@" + mention + "%");
+	st.setInt(2, LIMIT);
+	
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
     }
 
-    // TODO: get all posts with a hashtag
+    /**
+     * Gets all posts that have a "#" hashtag
+     * @param hashtag Hashtag
+     * @return List of posts
+     * @throws SQLException
+     */
     public List<Post> getByHashtag(String hashtag) throws SQLException {
-	return null;
+	String sql = "SELECT * FROM posts WHERE content LIKE ? ORDER BY date DESC LIMIT ?";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+	
+	st.setString(1, "%#" + hashtag + "%");
+	st.setInt(2, LIMIT);
+	
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
     }
     
     /**
