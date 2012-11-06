@@ -1,6 +1,10 @@
 package edu.umw.cpsc330.twitterclone;
 
-import java.awt.FlowLayout;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.swing.*;
 
@@ -9,7 +13,7 @@ import javax.swing.*;
  * 
  * @author Alex Lindeman
  */
-public class Timeline extends JFrame {
+public class Timeline extends JFrame implements ActionListener {
 
     /**
      * Serialization ID
@@ -29,14 +33,13 @@ public class Timeline extends JFrame {
     /**
      * Main view for all posts
      */
-    private static JList<Post> posts;
+    private static JList<String> posts;
 
     /**
      * Default constructor
      */
     public Timeline () {
 	db = new PostDatabase();
-	setTitle("Public timeline");
 	ui();
     }
     
@@ -52,15 +55,40 @@ public class Timeline extends JFrame {
      * Creates the user interface
      */
     public void ui() {
-	frame = new JFrame();
+	frame = new JFrame("Public Timeline");
 	frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-	frame.setLayout(new FlowLayout());
+	frame.setLayout(new GridBagLayout());
 	
-	JLabel title = new JLabel("Public Timeline");
-	frame.getContentPane().add(title);
+	GridBagConstraints c = new GridBagConstraints();
+	c.fill = GridBagConstraints.HORIZONTAL;
+	
+	JButton[] toolbar = {
+	    new JButton("Refresh"),
+	    new JButton("Register"),
+	    new JButton("Login")
+	};
+	
+	for (int i = 0; i < toolbar.length; i ++) {
+	    c.weightx = 0.333;
+	    c.weighty = 0;
+	    c.gridx = i;
+	    c.gridy = 1;
+	    
+	    frame.add(toolbar[i], c);
+	}
+	
+	posts = new JList<String>(populate());
+	
+	JScrollPane postScrollPane = new JScrollPane(posts);
+	postScrollPane.setPreferredSize(new Dimension(350, 500));
 
-	posts = new JList<Post>(populate());
-	frame.getContentPane().add(posts);
+	c.weightx = 1;
+	c.weighty = 1;
+	c.gridwidth = 3;
+	c.fill = GridBagConstraints.BOTH;
+	c.gridx = 0;
+	c.gridy = 0;
+	frame.add(postScrollPane, c);
 	
 	frame.pack();
 	frame.setVisible(true);
@@ -70,23 +98,37 @@ public class Timeline extends JFrame {
      * Populates the timeline with posts
      * @return array of public posts
      */
-    public Post[] populate() {
+    public String[] populate() {
 	try {
 	    List<Post> data = db.getAllPublic();
 	    Post[] list = data.toArray(new Post[data.size()]);
-	    return list;
+	    
+	    String[] display = new String[list.length];
+	    for (int i = 0; i < list.length; i ++) {
+		Format f = new SimpleDateFormat("MMM F YYYY, h:mm:ss aa");
+		String date = f.format(list[i].date);
+		
+		display[i] = "<html><font color=navy>" + list[i].author + " - "
+			+ date + "</font><br><font size=+1>"
+			+ list[i].getContent() + "</font></html>";
+	    }
+	    
+	    return display;
 	} catch (Exception e) {
 	    JOptionPane.showMessageDialog(frame,
 		    "An error occurred while populating the timeline:\n" + e.getMessage(),
 		    "Error",
 		    JOptionPane.ERROR_MESSAGE);
 	    frame.dispose();
-	} finally {
-	    db.close();
 	}
+	
+	return null;
+    }
 
-	// return an empty array instead of null, so nothing breaks
-	Post[] empty = {};
-	return empty;
+    /**
+     * Method called when an action is performed
+     */
+    public void actionPerformed(ActionEvent arg0) {
+	
     }
 }
