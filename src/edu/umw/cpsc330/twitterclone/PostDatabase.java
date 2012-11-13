@@ -26,8 +26,6 @@ public class PostDatabase extends Database {
 	try {
 	    Class.forName(DRIVER);
 	    db = DriverManager.getConnection(URI);
-
-	    // create post table if it doesn't already exist
 	    Statement create = db.createStatement();
 	    create.execute("CREATE TABLE IF NOT EXISTS posts ( id INTEGER PRIMARY KEY, author TEXT, date INTEGER, isPublic INTEGER, content TEXT );");
 	} catch (ClassNotFoundException e) {
@@ -39,6 +37,7 @@ public class PostDatabase extends Database {
 
     /**
      * Gets a post by its ID
+     * 
      * @param id ID of the post
      * @return Post
      * @throws SQLException
@@ -52,13 +51,14 @@ public class PostDatabase extends Database {
 	ResultSet results = st.executeQuery();
 	List<Post> parsed = parseResults(results);
 	
-	// there should only be 1 element in the list, or we have duped IDs
-	assert (parsed.size() == 1);
-	return parsed.get(0);
+	return (parsed.size() == 1) ?
+		parsed.get(0) :
+		    null;
     }
     
     /**
      * Gets all posts
+     * 
      * @return List of posts
      * @throws SQLException
      */
@@ -75,6 +75,7 @@ public class PostDatabase extends Database {
 
     /**
      * Gets all public posts
+     * 
      * @return List of posts
      * @throws SQLException
      */
@@ -91,6 +92,7 @@ public class PostDatabase extends Database {
 
     /**
      * Get all posts by an author (searched for by username)
+     * 
      * @param user User whose posts to fetch
      * @return List of posts
      * @throws SQLException
@@ -109,20 +111,8 @@ public class PostDatabase extends Database {
     }
 
     /**
-     * Get all posts by an author (searched for by ID)
-     * @param user User whose posts to fetch
-     * @return List of posts
-     * @throws SQLException
-     */
-    public List<Post> getByAuthor(int user) throws SQLException {
-	UserDatabase ud = new UserDatabase();
-	User resolved = ud.get(user);
-
-	return getByAuthor(resolved.id);
-    }
-
-    /**
-     * Gets all posts that begin with an "@" mention to a user
+     * Gets all posts that contain an "@" mention to a user
+     * 
      * @param mention User mentioned
      * @return List of posts
      * @throws SQLException
@@ -142,6 +132,7 @@ public class PostDatabase extends Database {
 
     /**
      * Gets all posts that have a "#" hashtag
+     * 
      * @param hashtag Hashtag
      * @return List of posts
      * @throws SQLException
@@ -161,6 +152,7 @@ public class PostDatabase extends Database {
     
     /**
      * Iterates through a ResultSet and converts it to a list
+     * 
      * @param results Results of a SQL query
      * @return List of posts
      * @throws SQLException
@@ -187,6 +179,7 @@ public class PostDatabase extends Database {
 
     /**
      * Adds a post to the database
+     * 
      * @param post Post to add
      * @return number of rows affected (should be 1 if post was successful)
      * @throws SQLException
@@ -212,6 +205,7 @@ public class PostDatabase extends Database {
 
     /**
      * Deletes a post from the database
+     * 
      * @param id the post's ID
      * @return number of rows affected
      * @throws SQLException

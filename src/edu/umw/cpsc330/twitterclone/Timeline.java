@@ -46,8 +46,7 @@ public class Timeline extends JFrame implements ActionListener {
     /**
      * Main method
      * 
-     * @param args
-     *            command-line arguments
+     * @param args Command-line arguments
      */
     public static void main(String[] args) {
 	new Timeline();
@@ -57,12 +56,19 @@ public class Timeline extends JFrame implements ActionListener {
      * Creates the user interface
      */
     public void ui() {
+	try {
+	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	} catch (Exception e) {
+	    System.err.println("Couldn't set native theme");
+	}
+	
 	frame = new JFrame("Public Timeline");
 	frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	frame.setLayout(new GridBagLayout());
 
 	GridBagConstraints c = new GridBagConstraints();
 	c.fill = GridBagConstraints.HORIZONTAL;
+	c.insets = new Insets(5, 5, 5, 5);
 
 	JButton[] toolbar = { new JButton("Refresh"), new JButton("Register"),
 		new JButton("Login") };
@@ -72,6 +78,8 @@ public class Timeline extends JFrame implements ActionListener {
 	    c.weighty = 0;
 	    c.gridx = i;
 	    c.gridy = 1;
+	    
+	    toolbar[i].addActionListener(this);
 
 	    frame.add(toolbar[i], c);
 	}
@@ -81,12 +89,13 @@ public class Timeline extends JFrame implements ActionListener {
 	JScrollPane postScrollPane = new JScrollPane(posts);
 	postScrollPane.setPreferredSize(new Dimension(350, 500));
 
-	c.weightx = 1;
-	c.weighty = 1;
-	c.gridwidth = 3;
 	c.fill = GridBagConstraints.BOTH;
+	c.gridwidth = 3;
 	c.gridx = 0;
 	c.gridy = 0;
+	c.insets = new Insets(5, 5, 0, 5);
+	c.weightx = 1;
+	c.weighty = 1;
 	frame.add(postScrollPane, c);
 
 	frame.pack();
@@ -128,8 +137,22 @@ public class Timeline extends JFrame implements ActionListener {
 
     /**
      * Method called when an action is performed
+     * 
+     * @param e ActionEvent
      */
-    public void actionPerformed(ActionEvent arg0) {
-
+    public void actionPerformed(ActionEvent e) {
+	switch (e.getActionCommand()) {
+	case "Login":
+	    System.out.println("login button pressed");
+	    break;
+	case "Refresh":
+	    System.out.println("refresh button pressed");
+	    break;
+	case "Register":
+	    System.out.println("register button pressed");
+	    break;
+	default:
+	    System.out.println("unrecognized: " + e.getActionCommand());
+	}
     }
 }

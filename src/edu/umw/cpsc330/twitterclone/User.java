@@ -1,5 +1,6 @@
 package edu.umw.cpsc330.twitterclone;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -37,12 +38,21 @@ public class User {
     /**
      * List of users the user is following
      */
-    public List<User> following;
+    public List<String> following;
 
     /**
      * Default constructor
      */
     public User() {
-	
+	following = new LinkedList<String>();
+    }
+    
+    /**
+     * Default constructor
+     * @param username Username
+     */
+    public User(String username) {
+	this.username = username;
+	following = new LinkedList<String>();
     }
 }
