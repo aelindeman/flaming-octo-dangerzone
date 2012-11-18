@@ -1,17 +1,14 @@
 package edu.umw.cpsc330.twitterclone;
 
-import java.awt.List;
+import java.util.List;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
-
-import swing2swt.layout.FlowLayout;
 
 public class DefaultWindow {
 
@@ -54,7 +51,7 @@ public class DefaultWindow {
 	// populate the table
 	try {
 	    posts = new PostDatabase();
-	    java.util.List<Post> postList = posts.getAllPublic();
+	    List<Post> postList = posts.getAllPublic();
 	    for (int i = 0; i < postList.size(); i ++) {
 		Post p = postList.get(i);
 		TableItem item = new TableItem(rightPanel, SWT.NONE);
