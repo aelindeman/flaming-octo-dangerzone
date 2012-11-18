@@ -49,6 +49,22 @@ public class UserDatabase extends Database {
 
 	return (parsed.size() == 1) ? parsed.get(0) : null;
     }
+    
+    /**
+     * Dumps an array of users that exist in the database.
+     * @return Array of users
+     * @throws SQLException
+     */
+    public User[] dump() throws SQLException {
+	String sql = "SELECT * FROM USERS";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+	
+	ResultSet results = st.executeQuery();
+	List<User> parsed = parseResults(results);
+	
+	return parsed.toArray(new User[parsed.size()]);
+    }
 
     /**
      * Adds a user to the database.

@@ -170,6 +170,8 @@ public class PostDatabase extends Database {
 	    p.setContent(results.getString("content"));
 
 	    p.date = new Date(date);
+	    
+	    System.out.println("parsed through post " + p.id);
 
 	    postList.add(p);
 	}
