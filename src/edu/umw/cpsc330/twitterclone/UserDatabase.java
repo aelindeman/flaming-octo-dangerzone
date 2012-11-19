@@ -21,7 +21,7 @@ public class UserDatabase extends Database {
 	    Class.forName(DRIVER);
 	    db = DriverManager.getConnection(URI);
 	    Statement create = db.createStatement();
-	    create.execute("CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY, username TEXT, pwhash TEXT, name TEXT, bio TEXT, following TEXT, UNIQUE (username) ON CONFLICT ABORT );");
+	    create.execute("CREATE TABLE IF NOT EXISTS users ( id INTEGER PRIMARY KEY, username TEXT, pwhash TEXT, pwsalt TEXT, name TEXT, bio TEXT, following TEXT, UNIQUE (username) ON CONFLICT ABORT );");
 	} catch (ClassNotFoundException e) {
 	    System.err.println("Caught exception while attempting to use database driver: "
 			    + e.getMessage());
@@ -74,15 +74,16 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public int add(User user) throws SQLException {
-	String sql = "INSERT INTO users VALUES ( null, ?, ?, ?, ?, ? )";
+	String sql = "INSERT INTO users VALUES ( null, ?, ?, ?, ?, ?, ? )";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
 	st.setString(1, user.username);
 	st.setString(2, user.pwhash);
-	st.setString(3, user.name);
-	st.setString(4, user.bio);
-	st.setString(5, implode(user.following));
+	st.setString(3, user.pwsalt);
+	st.setString(4, user.name);
+	st.setString(5, user.bio);
+	st.setString(6, implode(user.following));
 
 	st.execute();
 	int result = st.getUpdateCount();
@@ -97,14 +98,15 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public int edit(User user) throws SQLException {
-	String sql = "UPDATE users SET ( pwhash = ?, name = ?, bio = ? ) WHERE username = ?";
+	String sql = "UPDATE users SET ( pwhash = ?, pwsalt = ?, name = ?, bio = ? ) WHERE username = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
 	st.setString(1, user.pwhash);
-	st.setString(2, user.name);
-	st.setString(3, user.bio);
-	st.setString(4, user.username);
+	st.setString(2, user.pwsalt);
+	st.setString(3, user.name);
+	st.setString(4, user.bio);
+	st.setString(5, user.username);
 
 	st.execute();
 	int result = st.getUpdateCount();
@@ -169,6 +171,7 @@ public class UserDatabase extends Database {
 		u.id = results.getInt("id");
 		u.username = results.getString("username");
 		u.pwhash = results.getString("pwhash");
+		u.pwsalt = results.getString("pwsalt");
 		u.name = results.getString("name");
 		u.bio = results.getString("bio");
 

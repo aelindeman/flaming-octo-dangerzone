@@ -165,13 +165,12 @@ public class PostDatabase extends Database {
 
 	    p.id = results.getInt("id");
 	    p.author = results.getString("author");
+	    
 	    long date = results.getInt("date") * 1000L; // milliseconds
-	    p.isPublic = results.getInt("isPublic") == 1;
-	    p.setContent(results.getString("content"));
-
 	    p.date = new Date(date);
 	    
-	    System.out.println("parsed through post " + p.id);
+	    p.isPublic = results.getInt("isPublic") == 1;
+	    p.setContent(results.getString("content"));
 
 	    postList.add(p);
 	}

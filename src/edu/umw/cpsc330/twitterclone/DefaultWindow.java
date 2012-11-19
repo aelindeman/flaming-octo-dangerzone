@@ -21,18 +21,20 @@ public class DefaultWindow {
     private Button loginButton;
     private Label error;
     private Table rightPanel;
-    
-    private PostDatabase posts;
-    private UserDatabase users;
     private TableColumn authorColumn;
     private TableColumn dateColumn;
     private TableColumn postColumn;
+    
+    private PostDatabase posts;
+    private UserDatabase users;
+    
+    protected User currentUser;
     
     /**
      * Launch the application.
      * @param args
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) {	
 	try {
 	    DefaultWindow window = new DefaultWindow();
 	    window.open();
@@ -130,13 +132,43 @@ public class DefaultWindow {
 	
 	loginButton = new Button(buttonBar, SWT.NONE);
 	loginButton.setText("Login");
+	loginButton.addListener(SWT.Selection, new Listener() {
+	    public void handleEvent(Event e) {
+		switch (e.type) {
+		case SWT.Selection:
+		    currentUser = login(username.getText(), password.getText());
+		    if (currentUser != null) {
+			// send to personalized timeline and close this window
+		    }
+		    break;
+		}
+	    }
+	});
 	shell.setDefaultButton(loginButton);
 	
 	registerButton = new Button(buttonBar, SWT.NONE);
 	registerButton.setText("Register");
+	registerButton.addListener(SWT.Selection, new Listener() {
+	   public void handleEvent(Event e) {
+	       switch (e.type) {
+	       case SWT.Selection:
+		   // send user to registration form, and keep this window open
+		   break;
+	       }
+	   }
+	});
 	
 	searchButton = new Button(buttonBar, SWT.NONE);
 	searchButton.setText("Search");
+	searchButton.addListener(SWT.Selection, new Listener() {
+	   public void handleEvent(Event e) {
+	       switch (e.type) {
+	       case SWT.Selection:
+		   // open search dialog
+		   break;
+	       }
+	   }
+	});
 	
 	error = new Label(leftPanel, SWT.NONE);
 	error.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_RED));
@@ -174,5 +206,27 @@ public class DefaultWindow {
 		}
 	    }
 	});
+    }
+    
+    /**
+     * Logs in a user
+     * @param username Username
+     * @param password Password entered by user
+     * @return The user that logged in
+     */
+    protected User login(String username, String password) {
+	users = new UserDatabase();
+	try {
+	    User find = users.get(username);
+	    if (find != null) {
+		if (BCrypt.checkpw(password, find.pwhash)) {
+		    return find;
+		}
+	    }
+	} catch (Exception e) {
+	    error.setText("Incorrect username or password");
+	    // e.printStackTrace();
+	}
+	return null;
     }
 }

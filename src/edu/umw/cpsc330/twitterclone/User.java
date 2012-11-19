@@ -21,9 +21,14 @@ public class User {
     public String username;
 
     /**
-     * SHA1 hash of the user's password
+     * Hash of the user's password
      */
     public String pwhash;
+    
+    /**
+     * Salt of the user's password
+     */
+    public String pwsalt;
 
     /**
      * Display name of the user
