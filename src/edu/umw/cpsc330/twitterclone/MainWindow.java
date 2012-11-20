@@ -11,9 +11,10 @@ import java.util.List;
 import javax.swing.*;
 
 /**
- * asdf
+ * The main flaming-octo-dangerzone window.
  * 
  * @author Alex Lindeman
+ * @author Aaron Crowe
  */
 public class MainWindow extends JFrame {
     
@@ -35,10 +36,16 @@ public class MainWindow extends JFrame {
     private PostDatabase postDB = new PostDatabase();
     private UserDatabase userDB = new UserDatabase();
     
+    /**
+     * Main method
+     */
     public static void main(String[] args) {
 	new MainWindow();
     }
     
+    /**
+     * Default constructor
+     */
     private MainWindow() {
 	frame = new JFrame();
 	frame.setTitle("Public timeline - flaming-octo-dangerzone");
@@ -62,6 +69,12 @@ public class MainWindow extends JFrame {
 	frame.setVisible(true);
     }
     
+    /**
+     * Draws the post panel
+     * 
+     * @param posts Data for posts
+     * @return JPanel
+     */
     private JPanel drawPostPanel(java.util.List<Post> posts) {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BorderLayout());
@@ -78,6 +91,11 @@ public class MainWindow extends JFrame {
 	return panel;
     }
 
+    /**
+     * Draws the login panel
+     * 
+     * @return JPanel
+     */
     private JPanel drawLoginPanel() {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -99,6 +117,7 @@ public class MainWindow extends JFrame {
 	
 	panel.add(Box.createGlue());
 	
+	// login button
 	JButton submit = new JButton("Login");
 	submit.setAlignmentX(LEFT_ALIGNMENT);
 	frame.getRootPane().setDefaultButton(submit);
@@ -130,10 +149,17 @@ public class MainWindow extends JFrame {
 	});
 	panel.add(submit);
 	
+	// register button
 	JButton register = new JButton("Register");
 	register.setAlignmentX(LEFT_ALIGNMENT);
+	register.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent arg0) {
+		// TODO: spawn a new user window
+	    }
+	});
 	panel.add(register);
 	
+	// search button
 	JButton search = new JButton("Search");
 	search.setAlignmentX(LEFT_ALIGNMENT);
 	search.addActionListener(searchBox());
@@ -142,6 +168,11 @@ public class MainWindow extends JFrame {
 	return panel;
     }
     
+    /**
+     * Draws the user information panel
+     * 
+     * @return JPanel
+     */
     private JPanel drawUserInfoPanel() {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -240,6 +271,11 @@ public class MainWindow extends JFrame {
 	return panel;
     }
     
+    /**
+     * Redraws the table
+     * 
+     * @param data Data to use
+     */
     private void redrawTable(List<Post> data) {
 	frame.remove(postPanel);
 	
@@ -262,6 +298,7 @@ public class MainWindow extends JFrame {
 		if (term != null)
 		{
 		    try {
+			// TODO: just search all public posts for now... bleh
 			List<Post> all = postDB.getAllPublic();
 			List<Post> results = new LinkedList<Post>();
 			
@@ -279,6 +316,12 @@ public class MainWindow extends JFrame {
 	};
     }
     
+    /**
+     * Gets posts from the current user's list of followers
+     * 
+     * @return List of posts
+     * @throws SQLException
+     */
     private List<Post> getFollowedUsersPosts() throws SQLException {
 	List<Post> posts = new LinkedList<Post>();
 	posts.addAll(postDB.getByAuthor(auth.username));
@@ -290,7 +333,7 @@ public class MainWindow extends JFrame {
     }
     
     /**
-     * Validates the Login button.
+     * Validates input from the login form
      * 
      * @param username Username text
      * @param password Password text
