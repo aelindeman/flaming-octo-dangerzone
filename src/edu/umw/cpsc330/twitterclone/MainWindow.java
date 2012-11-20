@@ -58,6 +58,7 @@ public class MainWindow extends JFrame {
 	
 	frame = new JFrame();
 	frame.setTitle("Public timeline - flaming-octo-dangerzone");
+	frame.setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
 	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	frame.setLayout(new BorderLayout());
 	
