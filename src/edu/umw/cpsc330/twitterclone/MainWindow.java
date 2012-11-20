@@ -89,8 +89,33 @@ public class MainWindow extends JFrame {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BorderLayout());
 	
-	JTable table = new JTable();
+	final JTable table = new JTable();
 	table.setFillsViewportHeight(true);
+	table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);  
+	
+	table.addMouseListener(new MouseListener() {
+	    public void mouseClicked(MouseEvent arg0) {
+		
+		// make the left panel display information about the selected user on double-click
+		if (arg0.getClickCount() >= 2) {
+		    int row = table.getSelectedRow();
+		    if (row >= 0) {
+			try {
+			    String user = table.getValueAt(row, 0).toString();
+			    User info = userDB.get(user);
+
+			    usernameLabel.setText("@" + info.username);
+			    nameLabel.setText(info.name);
+			    bio.setText(info.bio);
+			} catch (Exception e) { }
+		    }
+		}
+	    }
+	    public void mouseEntered(MouseEvent e) { }
+	    public void mouseExited(MouseEvent e) { }
+	    public void mousePressed(MouseEvent e) { }
+	    public void mouseReleased(MouseEvent e) { }
+	});
 	
 	JScrollPane scroller = new JScrollPane(table);
 	panel.add(scroller);
