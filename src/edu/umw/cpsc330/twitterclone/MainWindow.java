@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  * The main flaming-octo-dangerzone window.
@@ -47,6 +48,10 @@ public class MainWindow extends JFrame {
      * Default constructor
      */
     private MainWindow() {
+	try {
+	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	} catch (Exception e) {	}
+	
 	frame = new JFrame();
 	frame.setTitle("Public timeline - flaming-octo-dangerzone");
 	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -100,6 +105,7 @@ public class MainWindow extends JFrame {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 	panel.setPreferredSize(new Dimension(200, 0));
+	panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	JLabel hero = new JLabel("Login");
 	hero.setAlignmentX(LEFT_ALIGNMENT);
@@ -123,6 +129,9 @@ public class MainWindow extends JFrame {
 	frame.getRootPane().setDefaultButton(submit);
 	submit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
+		if (user.getText().equals("") || new String(pass.getPassword()).equals(""))
+		    return;
+		
 		User validate = validateLogin(user.getText(), new String(pass.getPassword()));
 		if (validate != null) {
 		    auth = validate;
@@ -140,7 +149,7 @@ public class MainWindow extends JFrame {
 			}
 			postPanel = drawPostPanel(posts);
 			frame.add(postPanel, BorderLayout.CENTER);
-		    } catch (SQLException e) { }
+		    } catch (Exception e) { }
 		    frame.add(leftPanel, BorderLayout.LINE_START);
 		    frame.revalidate();
 		    frame.repaint();
@@ -177,19 +186,26 @@ public class MainWindow extends JFrame {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 	panel.setPreferredSize(new Dimension(200, 0));
+	panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	JLabel username = new JLabel("@" + auth.username);
 	username.setAlignmentX(LEFT_ALIGNMENT);
+	username.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
 	panel.add(username);
 	
 	JLabel name = new JLabel(auth.name);
 	name.setAlignmentX(LEFT_ALIGNMENT);
+	name.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
 	panel.add(name);
 	
 	JTextArea bio = new JTextArea(auth.bio);
 	bio.setAlignmentX(LEFT_ALIGNMENT);
 	bio.setBackground(frame.getBackground());
+	bio.setBorder(null);
 	bio.setEditable(false);
+	bio.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+	bio.setLineWrap(true);
+	bio.setWrapStyleWord(true);
 	panel.add(bio);
 	
 	// new post button
@@ -218,7 +234,7 @@ public class MainWindow extends JFrame {
 	       try {
 		   postDB.add(p);
 		   redrawTable(getFollowedUsersPosts());
-	       } catch (SQLException e) { }
+	       } catch (Exception e) { }
 	       
 	       JOptionPane.showMessageDialog(frame, "Post submitted successfully!");
 	   }
@@ -310,7 +326,7 @@ public class MainWindow extends JFrame {
 			}
 			redrawTable(results);
 			
-		    } catch (SQLException e) { }
+		    } catch (Exception e) { }
 		}
 	    }
 	};
@@ -350,7 +366,8 @@ public class MainWindow extends JFrame {
 		    return find;
 		}
 	    }
-	} catch (SQLException e) { }
+	} catch (Exception e) { }
+	
 	
 	// show error message and clear password entry
 	JOptionPane.showMessageDialog(frame, "Incorrect username or password.", "Authentication failure", JOptionPane.WARNING_MESSAGE);
