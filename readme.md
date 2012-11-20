@@ -6,20 +6,22 @@ A Twitter clone, written in Java, for a CPSC 330 project.
 Features
 --------
 
-  - user accounts
+  - user accounts ***[in progress]***
     - profiles
     - bio information
-  - public timeline
-  - personalized timeline for logged-in users (ability to follow other users)
-  - persistent information (SQLite database)
-  - hashtags
-  - @user messages
-  - GUI
+  - public timeline *[done]*
+  - personalized timeline for logged-in users *[done]*
+    - follow other users
+  - persistent information (SQLite database) *[done]*
+  - search *[done]*
+  - hashtags *[done]*
+  - @user messages *[done]*
+  - GUI ***[in progress]***
 
 Due date
 --------
 
-November 28th, 2012
+December 3rd, 2012
 
 Authors
 -------
