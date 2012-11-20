@@ -109,6 +109,26 @@ public class PostDatabase extends Database {
 	List<Post> parsed = parseResults(results);
 	return parsed;
     }
+    
+    /**
+     * Gets all posts that have a given string in them
+     * 
+     * @param search Search term
+     * @return List of posts
+     * @throws SQLException
+     */
+    public List<Post> getBySearchString(String search) throws SQLException {
+	String sql = "SELECT * FROM posts WHERE content LIKE ? ORDER BY date DESC LIMIT ?";
+	PreparedStatement st = db.prepareStatement(sql);
+	st.setQueryTimeout(TIMEOUT);
+	
+	st.setString(1, "%" + search + "%");
+	st.setInt(2, LIMIT);
+	
+	ResultSet results = st.executeQuery();
+	List<Post> parsed = parseResults(results);
+	return parsed;
+    }
 
     /**
      * Gets all posts that contain an "@" mention to a user
@@ -118,16 +138,7 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public List<Post> getByMention(String mention) throws SQLException {
-	String sql = "SELECT * FROM posts WHERE content LIKE ? ORDER BY date DESC LIMIT ?";
-	PreparedStatement st = db.prepareStatement(sql);
-	st.setQueryTimeout(TIMEOUT);
-	
-	st.setString(1, "%@" + mention + "%");
-	st.setInt(2, LIMIT);
-	
-	ResultSet results = st.executeQuery();
-	List<Post> parsed = parseResults(results);
-	return parsed;
+	return this.getBySearchString("@" + mention);
     }
 
     /**
@@ -138,16 +149,7 @@ public class PostDatabase extends Database {
      * @throws SQLException
      */
     public List<Post> getByHashtag(String hashtag) throws SQLException {
-	String sql = "SELECT * FROM posts WHERE content LIKE ? ORDER BY date DESC LIMIT ?";
-	PreparedStatement st = db.prepareStatement(sql);
-	st.setQueryTimeout(TIMEOUT);
-	
-	st.setString(1, "%#" + hashtag + "%");
-	st.setInt(2, LIMIT);
-	
-	ResultSet results = st.executeQuery();
-	List<Post> parsed = parseResults(results);
-	return parsed;
+	return this.getBySearchString("#" + hashtag);
     }
     
     /**
