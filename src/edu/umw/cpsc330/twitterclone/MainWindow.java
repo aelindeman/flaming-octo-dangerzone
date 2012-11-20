@@ -26,6 +26,10 @@ public class MainWindow extends JFrame {
     private JTextField user;
     private JPasswordField pass;
     
+    private JLabel usernameLabel;
+    private JLabel nameLabel;
+    private JTextArea bio;
+    
     /**
      * The currently-logged-in user
      */
@@ -70,6 +74,7 @@ public class MainWindow extends JFrame {
 	}
 	
 	frame.setSize(720, 380);
+	frame.setLocationRelativeTo(null);
 	frame.setMinimumSize(new Dimension(480, 320));
 	frame.setVisible(true);
     }
@@ -107,20 +112,37 @@ public class MainWindow extends JFrame {
 	panel.setPreferredSize(new Dimension(200, 0));
 	panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
+	// title label
 	JLabel hero = new JLabel("Login");
 	hero.setAlignmentX(LEFT_ALIGNMENT);
+	hero.setFont(new Font(panel.getFont().getFamily(), Font.PLAIN, 24));
 	panel.add(hero);
 	
+	// spacing between label and login form
+	panel.add(Box.createVerticalStrut(10));
+	
+	// username input
 	user = new JTextField();
 	user.setMaximumSize(new Dimension(10000, 32));
 	user.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(user);
 	
+	// spacing between username and password inputs
+	panel.add(Box.createVerticalStrut(5));
+	
+	// password input
 	pass = new JPasswordField();
 	pass.setMaximumSize(new Dimension(10000, 32));
 	pass.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(pass);
 	
+	// make username and password input fonts larger
+	Font existing = user.getFont();
+	Font inputFont = new Font(existing.getFamily(), existing.getStyle(), 16);
+	user.setFont(inputFont);
+	pass.setFont(inputFont);
+	
+	// spacer to push buttons to bottom
 	panel.add(Box.createGlue());
 	
 	// login button
@@ -129,7 +151,7 @@ public class MainWindow extends JFrame {
 	frame.getRootPane().setDefaultButton(submit);
 	submit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
-		if (user.getText().equals("") || new String(pass.getPassword()).equals(""))
+		if (user.getText().equals(""))
 		    return;
 		
 		User validate = validateLogin(user.getText(), new String(pass.getPassword()));
@@ -141,16 +163,11 @@ public class MainWindow extends JFrame {
 		    
 		    leftPanel = drawUserInfoPanel();
 		    try {
-			List<Post> posts = new LinkedList<Post>();
-			posts.addAll(postDB.getByAuthor(auth.username));
-			for (String u : auth.following) {
-			    List<Post> add = postDB.getByAuthor(u);
-			    posts.addAll(add);
-			}
-			postPanel = drawPostPanel(posts);
+			postPanel = drawPostPanel(getFollowedUsersPosts());
 			frame.add(postPanel, BorderLayout.CENTER);
 		    } catch (Exception e) { }
 		    frame.add(leftPanel, BorderLayout.LINE_START);
+		    frame.setTitle("Timeline for " + auth.username + " - flaming-octo-dangerzone");
 		    frame.revalidate();
 		    frame.repaint();
 		}
@@ -188,22 +205,25 @@ public class MainWindow extends JFrame {
 	panel.setPreferredSize(new Dimension(200, 0));
 	panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
-	JLabel username = new JLabel("@" + auth.username);
-	username.setAlignmentX(LEFT_ALIGNMENT);
-	username.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-	panel.add(username);
+	// username label
+	usernameLabel = new JLabel("@" + auth.username);
+	usernameLabel.setAlignmentX(LEFT_ALIGNMENT);
+	usernameLabel.setFont(new Font(panel.getFont().getFamily(), Font.BOLD, 14));
+	panel.add(usernameLabel);
 	
-	JLabel name = new JLabel(auth.name);
-	name.setAlignmentX(LEFT_ALIGNMENT);
-	name.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-	panel.add(name);
+	// real name label
+	nameLabel = new JLabel(auth.name);
+	nameLabel.setAlignmentX(LEFT_ALIGNMENT);
+	nameLabel.setFont(new Font(panel.getFont().getFamily(), Font.BOLD, 14));
+	panel.add(nameLabel);
 	
-	JTextArea bio = new JTextArea(auth.bio);
+	// bio text area
+	bio = new JTextArea(auth.bio);
 	bio.setAlignmentX(LEFT_ALIGNMENT);
 	bio.setBackground(frame.getBackground());
 	bio.setBorder(null);
 	bio.setEditable(false);
-	bio.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+	bio.setFont(new Font(panel.getFont().getFamily(), Font.PLAIN, 12));
 	bio.setLineWrap(true);
 	bio.setWrapStyleWord(true);
 	panel.add(bio);
@@ -217,12 +237,14 @@ public class MainWindow extends JFrame {
 	       p.author = auth.username;
 	       p.date = new Date();
 	       
+	       // ask for post content
 	       String pc = JOptionPane.showInputDialog(frame, "Enter your post:\n(keep it under 140 characters)", "New post", JOptionPane.QUESTION_MESSAGE);
 	       if (pc != null)
 		   p.setContent(pc);
 	       else
 		   return;
 	       
+	       // ask for public/private/cancel
 	       String[] publicOptions = {"Everyone", "Just followers", "Cancel (don't post at all)"};
 	       int visibility = JOptionPane.showOptionDialog(frame, "Make this post public to everyone, or just your followers?", "New post", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, publicOptions, publicOptions[0]);
 	       
@@ -231,6 +253,7 @@ public class MainWindow extends JFrame {
 		   return;
 	       p.isPublic = (visibility == 0);
 	       
+	       // add to database
 	       try {
 		   postDB.add(p);
 		   redrawTable(getFollowedUsersPosts());
@@ -280,6 +303,7 @@ public class MainWindow extends JFrame {
 		frame.repaint();
 		
 		auth = null;
+		frame.setTitle("Public timeline - flaming-octo-dangerzone");
 	    } 
 	});
 	panel.add(logout);
@@ -313,6 +337,7 @@ public class MainWindow extends JFrame {
 		String term = JOptionPane.showInputDialog(frame, "Enter something to search for:\nPosts by a user: '@username'\nHashtags: '#hashtag'", "Search", JOptionPane.QUESTION_MESSAGE);
 		if (term != null)
 		{
+		    frame.setTitle("Search results for '" + term + "' - flaming-octo-dangerzone");
 		    try {
 			// TODO: just search all public posts for now... bleh
 			List<Post> all = postDB.getAllPublic();
@@ -367,7 +392,6 @@ public class MainWindow extends JFrame {
 		}
 	    }
 	} catch (Exception e) { }
-	
 	
 	// show error message and clear password entry
 	JOptionPane.showMessageDialog(frame, "Incorrect username or password.", "Authentication failure", JOptionPane.WARNING_MESSAGE);
