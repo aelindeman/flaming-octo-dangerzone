@@ -3,6 +3,8 @@ package edu.umw.cpsc330.twitterclone;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,8 +51,8 @@ public class MainWindow extends JFrame {
 	try {
 	    postPanel = drawPostPanel(postDB.getAllPublic());
 	    frame.add(postPanel, BorderLayout.CENTER);
-	} catch (Exception e) {
-	    String error = "There was an error connecting to the database:\n" + e.getMessage();
+	} catch (SQLException e) {
+	    String error = "There was an error connecting to the database.\n" + e.getMessage();
 	    JOptionPane.showMessageDialog(frame, error, "Error", JOptionPane.ERROR_MESSAGE);
 	    e.printStackTrace();
 	}
@@ -79,23 +81,26 @@ public class MainWindow extends JFrame {
     private JPanel drawLoginPanel() {
 	final JPanel panel = new JPanel();
 	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-	panel.setAlignmentX(LEFT_ALIGNMENT);
 	panel.setPreferredSize(new Dimension(200, 0));
 	
 	JLabel hero = new JLabel("Login");
+	hero.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(hero);
 	
 	user = new JTextField();
-	user.setMaximumSize(new Dimension(10000, 24));
+	user.setMaximumSize(new Dimension(10000, 32));
+	user.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(user);
 	
 	pass = new JPasswordField();
-	pass.setMaximumSize(new Dimension(10000, 24));
+	pass.setMaximumSize(new Dimension(10000, 32));
+	pass.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(pass);
 	
-	panel.add(Box.createRigidArea(new Dimension(1, 10)));
+	panel.add(Box.createGlue());
 	
 	JButton submit = new JButton("Login");
+	submit.setAlignmentX(LEFT_ALIGNMENT);
 	frame.getRootPane().setDefaultButton(submit);
 	submit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
@@ -105,23 +110,18 @@ public class MainWindow extends JFrame {
 		    
 		    frame.remove(leftPanel);
 		    frame.remove(postPanel);
-		    frame.revalidate();
-		    frame.repaint();
 		    
 		    leftPanel = drawUserInfoPanel();
 		    try {
 			List<Post> posts = new LinkedList<Post>();
+			posts.addAll(postDB.getByAuthor(auth.username));
 			for (String u : auth.following) {
 			    List<Post> add = postDB.getByAuthor(u);
 			    posts.addAll(add);
 			}
 			postPanel = drawPostPanel(posts);
 			frame.add(postPanel, BorderLayout.CENTER);
-		    } catch (Exception e) {
-			String error = "There was an error connecting to the database:\n" + e.getMessage();
-			JOptionPane.showMessageDialog(frame, error, "Error", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
-		    }
+		    } catch (SQLException e) { }
 		    frame.add(leftPanel, BorderLayout.LINE_START);
 		    frame.revalidate();
 		    frame.repaint();
@@ -131,9 +131,12 @@ public class MainWindow extends JFrame {
 	panel.add(submit);
 	
 	JButton register = new JButton("Register");
+	register.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(register);
 	
 	JButton search = new JButton("Search");
+	search.setAlignmentX(LEFT_ALIGNMENT);
+	search.addActionListener(searchBox());
 	panel.add(search);
 	
 	return panel;
@@ -154,17 +157,60 @@ public class MainWindow extends JFrame {
 	
 	JTextArea bio = new JTextArea(auth.bio);
 	bio.setAlignmentX(LEFT_ALIGNMENT);
+	bio.setBackground(frame.getBackground());
 	bio.setEditable(false);
 	panel.add(bio);
 	
+	// new post button
 	JButton create = new JButton("New post");
 	create.setAlignmentX(LEFT_ALIGNMENT);
+	create.addActionListener(new ActionListener() {
+	   public void actionPerformed(ActionEvent arg0) {
+	       Post p = new Post();
+	       p.author = auth.username;
+	       p.date = new Date();
+	       
+	       String pc = JOptionPane.showInputDialog(frame, "Enter your post:\n(keep it under 140 characters)", "New post", JOptionPane.QUESTION_MESSAGE);
+	       if (pc != null)
+		   p.setContent(pc);
+	       else
+		   return;
+	       
+	       String[] publicOptions = {"Everyone", "Just followers", "Cancel (don't post at all)"};
+	       int visibility = JOptionPane.showOptionDialog(frame, "Make this post public to everyone, or just your followers?", "New post", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, publicOptions, publicOptions[0]);
+	       
+	       // 2 means cancel
+	       if (visibility == 2)
+		   return;
+	       p.isPublic = (visibility == 0);
+	       
+	       try {
+		   postDB.add(p);
+		   redrawTable(getFollowedUsersPosts());
+	       } catch (SQLException e) { }
+	       
+	       JOptionPane.showMessageDialog(frame, "Post submitted successfully!");
+	   }
+	});
 	panel.add(create);
 	
+	// edit profile button
 	JButton edit = new JButton("Edit profile");
 	edit.setAlignmentX(LEFT_ALIGNMENT);
+	edit.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent arg0) {
+		// TODO: spawn an editor window of some kind...
+	    }
+	});
 	panel.add(edit);
 	
+	// search button
+	JButton search = new JButton("Search");
+	edit.setAlignmentX(LEFT_ALIGNMENT);
+	search.addActionListener(searchBox());
+	panel.add(search);
+	
+	// logout button
 	JButton logout = new JButton("Log out");
 	logout.setAlignmentX(LEFT_ALIGNMENT);
 	logout.addActionListener(new ActionListener() {
@@ -181,11 +227,7 @@ public class MainWindow extends JFrame {
 		try {
 		    postPanel = drawPostPanel(postDB.getAllPublic());
 		    frame.add(postPanel, BorderLayout.CENTER);
-		} catch (Exception e) {
-		    String error = "There was an error connecting to the database:\n" + e.getMessage();
-		    JOptionPane.showMessageDialog(frame, error, "Error", JOptionPane.ERROR_MESSAGE);
-		    e.printStackTrace();
-		}
+		} catch (SQLException e) { }
 		
 		frame.revalidate();
 		frame.repaint();
@@ -198,6 +240,62 @@ public class MainWindow extends JFrame {
 	return panel;
     }
     
+    private void redrawTable(List<Post> data) {
+	frame.remove(postPanel);
+	
+	postPanel = drawPostPanel(data);
+	frame.add(postPanel, BorderLayout.CENTER);
+	
+	frame.revalidate();
+	frame.repaint();
+    }
+    
+    /**
+     * An ActionListener that spawns a search box
+     * 
+     * @return ActionListener
+     */
+    private ActionListener searchBox() {
+	return new ActionListener() {
+	    public void actionPerformed(ActionEvent arg0) {
+		String term = JOptionPane.showInputDialog(frame, "Enter something to search for:\nPosts by a user: '@username'\nHashtags: '#hashtag'", "Search", JOptionPane.QUESTION_MESSAGE);
+		if (term != null)
+		{
+		    try {
+			List<Post> all = postDB.getAllPublic();
+			List<Post> results = new LinkedList<Post>();
+			
+			for (Post p : all) {
+			    if (p.getContent().contains(term))
+			    {
+				results.add(p);
+			    }
+			}
+			redrawTable(results);
+			
+		    } catch (SQLException e) { }
+		}
+	    }
+	};
+    }
+    
+    private List<Post> getFollowedUsersPosts() throws SQLException {
+	List<Post> posts = new LinkedList<Post>();
+	posts.addAll(postDB.getByAuthor(auth.username));
+	for (String u : auth.following) {
+	    List<Post> add = postDB.getByAuthor(u);
+	    posts.addAll(add);
+	}
+	return posts;
+    }
+    
+    /**
+     * Validates the Login button.
+     * 
+     * @param username Username text
+     * @param password Password text
+     * @return User to be logged in as
+     */
     private User validateLogin(String username, String password) {
 	try {
 	    User find = userDB.get(username);
@@ -205,11 +303,11 @@ public class MainWindow extends JFrame {
 	    if (find != null) {
 		if (BCrypt.checkpw(password, find.pwhash)) {
 		    // login successful
-		    JOptionPane.showMessageDialog(frame, "Login successful!");
+		    // JOptionPane.showMessageDialog(frame, "Login successful!");
 		    return find;
 		}
 	    }
-	} catch (Exception e) { }
+	} catch (SQLException e) { }
 	
 	// show error message and clear password entry
 	JOptionPane.showMessageDialog(frame, "Incorrect username or password.", "Authentication failure", JOptionPane.WARNING_MESSAGE);
