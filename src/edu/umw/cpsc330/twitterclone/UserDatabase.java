@@ -46,7 +46,7 @@ public class UserDatabase extends Database {
 
 	ResultSet results = st.executeQuery();
 	List<User> parsed = parseResults(results);
-
+	
 	return (parsed.size() == 1) ? parsed.get(0) : null;
     }
     
@@ -185,8 +185,7 @@ public class UserDatabase extends Database {
 	    } while (results.next());
 	}
 
-	// return null if empty
-	return userList.isEmpty() ? null : userList;
+	return userList;
     }
 
     /**

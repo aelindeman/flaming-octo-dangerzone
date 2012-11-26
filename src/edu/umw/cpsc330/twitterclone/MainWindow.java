@@ -207,6 +207,7 @@ public class MainWindow extends JFrame {
 	register.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
 		// TODO: spawn a new user window
+		new ProfileEditor(frame, true, userDB, null, "New user");
 	    }
 	});
 	panel.add(register);
@@ -296,6 +297,7 @@ public class MainWindow extends JFrame {
 	edit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
 		// TODO: spawn an editor window of some kind...
+		new ProfileEditor(frame, true, userDB, auth, "Edit profile");
 	    }
 	});
 	panel.add(edit);
