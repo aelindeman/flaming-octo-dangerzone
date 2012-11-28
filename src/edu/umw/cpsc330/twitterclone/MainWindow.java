@@ -233,7 +233,7 @@ public class MainWindow extends JFrame {
 	panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	// username label
-	usernameLabel = new JLabel("@" + auth.username);
+	usernameLabel = new JLabel(auth.username);
 	usernameLabel.setAlignmentX(LEFT_ALIGNMENT);
 	usernameLabel.setFont(new Font(panel.getFont().getFamily(), Font.BOLD, 14));
 	panel.add(usernameLabel);
@@ -254,6 +254,20 @@ public class MainWindow extends JFrame {
 	bio.setLineWrap(true);
 	bio.setWrapStyleWord(true);
 	panel.add(bio);
+	
+	// follow user button
+	if(auth != null && usernameLabel.getText().equals(auth.username)){
+		JLabel temp = new JLabel(usernameLabel.getText() + " " + auth.username);
+		panel.add(temp);
+		JButton follow = new JButton("Follow User");
+		follow.setAlignmentX(LEFT_ALIGNMENT);
+		follow.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				auth.following.add(usernameLabel.getText());
+			}
+		});
+		panel.add(follow);
+	}
 	
 	// new post button
 	JButton create = new JButton("New post");
