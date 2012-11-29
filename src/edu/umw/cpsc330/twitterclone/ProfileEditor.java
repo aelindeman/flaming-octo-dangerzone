@@ -124,14 +124,14 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	buttonRow.setAlignmentX(LEFT_ALIGNMENT);
 	buttonRow.setLayout(new BoxLayout(buttonRow, BoxLayout.X_AXIS));
 	
-	cancel = new JButton("Cancel");
-	cancel.addActionListener(this);
-	buttonRow.add(cancel);
-	
 	submit = new JButton("Save changes");
 	submit.addActionListener(this);
 	panel.getRootPane().setDefaultButton(submit);
 	buttonRow.add(submit);
+	
+	cancel = new JButton("Cancel");
+	cancel.addActionListener(this);
+	buttonRow.add(cancel);
 	
 	panel.add(buttonRow);
 	
@@ -257,7 +257,7 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	}
 	
 	if (arg0.getSource() == addFollow) {
-	    String input = JOptionPane.showInputDialog(panel, "Username to follow:", "Follow a user");
+	    String input = JOptionPane.showInputDialog(panel, "Username to follow:");
 	    if (input.length() > 0) {
 		following.add(input);
 		followList.setListData(following.toArray(new String[following.size()]));
@@ -269,9 +269,12 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	    String drop = followList.getSelectedValue();
 	    if (drop.length() > 0) {
 		if (following.size() != 0) {
-		    following.remove(drop);
-		    followList.setListData(following.toArray(new String[following.size()]));
-		    followList.repaint();
+		    int sure = JOptionPane.showConfirmDialog(panel, "Are you sure you want to stop following " + drop + "?", "Unfollow a user", JOptionPane.YES_NO_OPTION);
+		    if (sure == JOptionPane.YES_OPTION) { 
+			following.remove(drop);
+			followList.setListData(following.toArray(new String[following.size()]));
+			followList.repaint();
+		    }
 		}
 	    }
 	}
