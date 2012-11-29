@@ -195,6 +195,9 @@ public class UserDatabase extends Database {
      * @return Comma-separated list
      */
     private static String implode(List<String> str) {
+	if (str == null)
+	    return "";
+	
 	String[] collection = str.toArray(new String[str.size()]);
 
 	StringBuilder result = new StringBuilder();
