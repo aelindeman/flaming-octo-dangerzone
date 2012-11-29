@@ -98,7 +98,7 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public int edit(User user) throws SQLException {
-	String sql = "UPDATE users SET pwhash = ?, pwsalt = ?, name = ?, bio = ?, followers = ? WHERE username = ?";
+	String sql = "UPDATE users SET pwhash = ?, pwsalt = ?, name = ?, bio = ?, following = ? WHERE username = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
