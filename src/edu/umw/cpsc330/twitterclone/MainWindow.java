@@ -26,9 +26,13 @@ public class MainWindow extends JFrame {
     private JTextField user;
     private JPasswordField pass;
     
+    private String profileName; 
+    
     private JLabel usernameLabel;
     private JLabel nameLabel;
     private JTextArea bio;
+    
+    private JButton follow;
     
     /**
      * The currently-logged-in user
@@ -74,6 +78,9 @@ public class MainWindow extends JFrame {
 	    e.printStackTrace();
 	}
 	
+	
+	profileName = "test";
+	
 	frame.setSize(720, 380);
 	frame.setLocationRelativeTo(null);
 	frame.setMinimumSize(new Dimension(480, 320));
@@ -102,13 +109,16 @@ public class MainWindow extends JFrame {
 		    int row = table.getSelectedRow();
 		    if (row >= 0) {
 			try {
+				System.out.println("Test2");
 			    String user = table.getValueAt(row, 0).toString();
 			    User info = userDB.get(user);
 
+			    profileName = info.username;
 			    usernameLabel.setText(info.username);
 			    nameLabel.setText(info.name);
 			    bio.setText(info.bio);
-			} catch (Exception e) { }
+			    drawUserInfoPanel();
+			} catch (Exception e) { e.printStackTrace();}
 		    }
 		}
 	    }
@@ -187,6 +197,7 @@ public class MainWindow extends JFrame {
 		    frame.remove(leftPanel);
 		    frame.remove(postPanel);
 		    
+		    profileName = auth.username;
 		    leftPanel = drawUserInfoPanel();
 		    try {
 			postPanel = drawPostPanel(getFollowedUsersPosts());
@@ -254,18 +265,29 @@ public class MainWindow extends JFrame {
 	bio.setWrapStyleWord(true);
 	panel.add(bio);
 	
+	follow = new JButton("Follow User");
+	follow.setAlignmentX(LEFT_ALIGNMENT);
+	follow.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent arg0) {
+			auth.following.add(usernameLabel.getText());
+		}
+	});
+	panel.add(follow);
+	follow.setVisible(false);
+	
 	// follow user button
-	if(auth != null && usernameLabel.getText().equals(auth.username)){
-		JLabel temp = new JLabel(usernameLabel.getText() + " " + auth.username);
-		panel.add(temp);
-		JButton follow = new JButton("Follow User");
-		follow.setAlignmentX(LEFT_ALIGNMENT);
-		follow.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				auth.following.add(usernameLabel.getText());
-			}
-		});
+	if(auth != null && profileName != usernameLabel.getText()){
+		System.out.println(usernameLabel.getText() + " " + profileName);
+		follow.setVisible(true);
 		panel.add(follow);
+		revalidate();
+		repaint();
+	}
+	else{
+		System.out.println(usernameLabel.getText() + " else " + profileName);
+		follow.setVisible(false);
+		revalidate();
+		repaint();
 	}
 	
 	// new post button
