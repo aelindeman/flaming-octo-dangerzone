@@ -105,7 +105,7 @@ public class MainWindow extends JFrame {
 			    String user = table.getValueAt(row, 0).toString();
 			    User info = userDB.get(user);
 
-			    usernameLabel.setText("@" + info.username);
+			    usernameLabel.setText(info.username);
 			    nameLabel.setText(info.name);
 			    bio.setText(info.bio);
 			} catch (Exception e) { }
@@ -206,7 +206,6 @@ public class MainWindow extends JFrame {
 	register.setAlignmentX(LEFT_ALIGNMENT);
 	register.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
-		// TODO: spawn a new user window
 		new ProfileEditor(frame, true, userDB, null, "New user");
 	    }
 	});
@@ -310,8 +309,12 @@ public class MainWindow extends JFrame {
 	edit.setAlignmentX(LEFT_ALIGNMENT);
 	edit.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
-		// TODO: spawn an editor window of some kind...
 		new ProfileEditor(frame, true, userDB, auth, "Edit profile");
+		try {
+		    // reload the user
+		    auth = userDB.get(auth.username);
+		    redrawTable(getFollowedUsersPosts());
+		} catch (Exception e) { }
 	    }
 	});
 	panel.add(edit);
@@ -376,7 +379,7 @@ public class MainWindow extends JFrame {
     private ActionListener searchBox() {
 	return new ActionListener() {
 	    public void actionPerformed(ActionEvent arg0) {
-		String term = JOptionPane.showInputDialog(frame, "Enter something to search for:\nPosts by a user: '@username'\nHashtags: '#hashtag'", "Search", JOptionPane.QUESTION_MESSAGE);
+		String term = JOptionPane.showInputDialog(frame, "Enter a hashtag to search for:", "#");
 		if (term != null)
 		{
 		    frame.setTitle("Search results for '" + term + "' - flaming-octo-dangerzone");

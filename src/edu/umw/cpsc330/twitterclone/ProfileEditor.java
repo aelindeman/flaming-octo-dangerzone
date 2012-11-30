@@ -1,9 +1,10 @@
 package edu.umw.cpsc330.twitterclone;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -14,14 +15,16 @@ public class ProfileEditor extends JDialog implements ActionListener {
     private UserDatabase db;
     private User auth;
     
+    private List<String> following = new LinkedList<String>();
+    
     private JPanel panel;
     private JTextField username;
     private JPasswordField password;
     private JTextField name;
     private JTextArea bio;
 
+    private JList<String> followList;
     private JButton addFollow;
-    private JButton listFollow;
     private JButton stopFollow;
     
     private JButton submit;
@@ -39,6 +42,7 @@ public class ProfileEditor extends JDialog implements ActionListener {
     public ProfileEditor(JFrame frame, boolean modal, UserDatabase db, User auth, String title) {
 	super(frame, modal);
 	this.setTitle(title);
+	this.setResizable(false);
 	
 	this.db = db;
 	
@@ -63,6 +67,8 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	password.setAlignmentX(LEFT_ALIGNMENT);
 	panel.add(password);
 	
+	panel.add(Box.createVerticalStrut(20));
+	
 	// name
 	JLabel nameLabel = new JLabel("Name");
 	nameLabel.setAlignmentX(LEFT_ALIGNMENT);
@@ -82,49 +88,50 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	bio.setWrapStyleWord(true);
 	panel.add(bio);
 	
-	panel.add(Box.createVerticalStrut(10));
+	panel.add(Box.createVerticalStrut(20));
 	
-	// manage followers section
-	JLabel followerManagementLabel = new JLabel("Manage who you're following:");
-	followerManagementLabel.setAlignmentX(LEFT_ALIGNMENT);
-	panel.add(followerManagementLabel);
-	
-	JPanel followRow = new JPanel();
-	followRow.setAlignmentX(LEFT_ALIGNMENT);
-	followRow.setLayout(new BoxLayout(followRow, BoxLayout.X_AXIS));
-	
-	stopFollow = new JButton("-");
-	stopFollow.addActionListener(this);
-	stopFollow.setAlignmentX(CENTER_ALIGNMENT);
-	followRow.add(stopFollow);
-	
-	listFollow = new JButton("List");
-	listFollow.addActionListener(this);
-	listFollow.setAlignmentX(CENTER_ALIGNMENT);
-	followRow.add(listFollow);
-	
-	addFollow = new JButton("+");
-	addFollow.addActionListener(this);
-	addFollow.setAlignmentX(CENTER_ALIGNMENT);
-	followRow.add(addFollow);
-	
-	panel.add(followRow);
-	
-	panel.add(Box.createVerticalStrut(10));
+	// following
+	if (auth != null) {
+	    panel.add(new JLabel("Following"));
+	    followList = new JList<String>(); 
+
+	    JScrollPane scroll = new JScrollPane(followList);
+	    scroll.setAlignmentX(LEFT_ALIGNMENT);
+	    scroll.setPreferredSize(new Dimension(0, 60));
+	    panel.add(scroll);
+
+	    JPanel followButtons = new JPanel();
+	    followButtons.setAlignmentX(LEFT_ALIGNMENT);
+	    followButtons.setLayout(new BoxLayout(followButtons, BoxLayout.X_AXIS));
+
+	    addFollow = new JButton("+");
+	    addFollow.setBorder(new EmptyBorder(4, 6, 4, 6));
+	    addFollow.addActionListener(this);
+	    followButtons.add(addFollow);
+
+	    stopFollow = new JButton("-");
+	    stopFollow.setBorder(new EmptyBorder(4, 6, 4, 6));
+	    stopFollow.addActionListener(this);
+	    followButtons.add(stopFollow);
+
+	    panel.add(followButtons);
+
+	    panel.add(Box.createVerticalStrut(10));
+	}
 	
 	// submit/cancel buttons
 	JPanel buttonRow = new JPanel();
 	buttonRow.setAlignmentX(LEFT_ALIGNMENT);
 	buttonRow.setLayout(new BoxLayout(buttonRow, BoxLayout.X_AXIS));
 	
-	cancel = new JButton("Cancel");
-	cancel.addActionListener(this);
-	buttonRow.add(cancel);
-	
 	submit = new JButton("Save changes");
 	submit.addActionListener(this);
 	panel.getRootPane().setDefaultButton(submit);
 	buttonRow.add(submit);
+	
+	cancel = new JButton("Cancel");
+	cancel.addActionListener(this);
+	buttonRow.add(cancel);
 	
 	panel.add(buttonRow);
 	
@@ -135,6 +142,15 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	    username.setEditable(false);
 	    name.setText(auth.name);
 	    bio.setText(auth.bio);
+	    
+	    if (auth.following.size() > 0)
+	    {
+		// copy
+		for (String u : auth.following)
+		    following.add(u);
+		
+		followList.setListData(following.toArray(new String[following.size()]));
+	    }
 	}
 
 	pack();
@@ -150,9 +166,9 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	    return false;
 	}
 	
-	if (password.getPassword().length == 0)
+	if (auth == null && password.getPassword().length == 0)
 	{
-	    JOptionPane.showMessageDialog(panel, "Enter your password", null, JOptionPane.WARNING_MESSAGE);
+	    JOptionPane.showMessageDialog(panel, "Password cannot be blank.", null, JOptionPane.WARNING_MESSAGE);
 	    return false;
 	}
 	
@@ -166,59 +182,72 @@ public class ProfileEditor extends JDialog implements ActionListener {
     }
     
     /**
-     * Makes the proper changes to the user database
+     * Writes changes to the database
+     * @return rows affected
      */
-    public int makeBackendChanges() {
-	if (!validateInputs()) return 0;
+    public int submitChanges() {
+	boolean creatingNewUser = (auth == null);
+	User u = new User();
 	
-	if (auth != null) {
-	    // modifying existing user
-	    User m = auth;
-	    m.name = name.getText();
-	    m.bio = bio.getText();
-	    
-	    m.pwhash = BCrypt.hashpw(new String(password.getPassword()), m.pwsalt);
-	    
-	    try {
-		int result = db.edit(m);
-		return result;
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
-	} else {
+	// validate
+	if (!validateInputs())
+	    return 0;
+	
+	if (creatingNewUser) {
 	    // new user
-	    User n = new User(username.getText());
-	    n.name = name.getText();
-	    n.bio = bio.getText();
-	    
+	    u.username = username.getText();
+	    u.name = name.getText();
+	    u.bio = bio.getText();
 	    String salt = BCrypt.gensalt();
-	    n.pwsalt = salt;
-	    n.pwhash = BCrypt.hashpw(new String(password.getPassword()), salt);
+	    u.pwhash = BCrypt.hashpw(new String(password.getPassword()), salt);
+	    u.pwsalt = salt;
 	    
-	    n.following = new LinkedList<String>();
+	    u.following = new LinkedList<String>();
+	} else {
+	    // editing existing user
+	    u.username = auth.username;
+	    u.name = name.getText();
+	    u.bio = bio.getText();
+	    u.pwsalt = auth.pwsalt;
 	    
-	    try {
-		if (db.get(username.getText()) != null)
-		{
-		    JOptionPane.showMessageDialog(panel, "That username is taken.\nChoose another username.", null, JOptionPane.ERROR_MESSAGE);
+	    if (password.getPassword().length > 0)
+		u.pwhash = BCrypt.hashpw(new String(password.getPassword()), auth.pwsalt);
+	    else
+		u.pwhash = auth.pwhash;
+	    
+	    u.following = following;
+	}
+	
+	int result = 0;
+	try {
+	    if (creatingNewUser) {
+		// check that the username isn't already taken
+		if (db.get(u.username) != null) {
+		    JOptionPane.showMessageDialog(panel, "That username is taken.\nPick another username.", "Create user", JOptionPane.ERROR_MESSAGE);
 		    return 0;
 		}
 		
-		int result = db.add(n);
-		return result;
-	    } catch (Exception e) {
-		e.printStackTrace();
+		result = db.add(u);
+		auth = u;
+	    } else {
+		result = db.edit(u);
+		auth = u;
 	    }
+	} catch (Exception e) {
+	    JOptionPane.showMessageDialog(panel, "An error occured while trying to save:\n" + e, "Error", JOptionPane.ERROR_MESSAGE);
+	    e.printStackTrace();
 	}
 	
-	return 0;
+	return result;
     }
-
+    /**
+     * Handles button press events
+     */
     public void actionPerformed(ActionEvent arg0) {
 	if (arg0.getSource() == submit) {
-	    if (makeBackendChanges() == 1)
-	    {
-		JOptionPane.showMessageDialog(panel, "Changes successful!");
+	    int result = submitChanges();
+	    if (result == 1) {
+		JOptionPane.showMessageDialog(panel, "Changes saved.");
 		this.dispose();
 	    }
 	}
@@ -228,15 +257,26 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	}
 	
 	if (arg0.getSource() == addFollow) {
-	    // add user
-	}
-	
-	if (arg0.getSource() == listFollow) {
-	    // list of users
+	    String input = JOptionPane.showInputDialog(panel, "Username to follow:");
+	    if (input.length() > 0) {
+		following.add(input);
+		followList.setListData(following.toArray(new String[following.size()]));
+		followList.repaint();
+	    }
 	}
 	
 	if (arg0.getSource() == stopFollow) {
-	    // remove user
+	    String drop = followList.getSelectedValue();
+	    if (drop.length() > 0) {
+		if (following.size() != 0) {
+		    int sure = JOptionPane.showConfirmDialog(panel, "Are you sure you want to stop following " + drop + "?", "Unfollow a user", JOptionPane.YES_NO_OPTION);
+		    if (sure == JOptionPane.YES_OPTION) { 
+			following.remove(drop);
+			followList.setListData(following.toArray(new String[following.size()]));
+			followList.repaint();
+		    }
+		}
+	    }
 	}
     }
 }

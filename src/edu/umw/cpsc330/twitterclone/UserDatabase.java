@@ -98,7 +98,7 @@ public class UserDatabase extends Database {
      * @throws SQLException
      */
     public int edit(User user) throws SQLException {
-	String sql = "UPDATE users SET pwhash = ?, pwsalt = ?, name = ?, bio = ? WHERE username = ?";
+	String sql = "UPDATE users SET pwhash = ?, pwsalt = ?, name = ?, bio = ?, following = ? WHERE username = ?";
 	PreparedStatement st = db.prepareStatement(sql);
 	st.setQueryTimeout(TIMEOUT);
 
@@ -106,7 +106,8 @@ public class UserDatabase extends Database {
 	st.setString(2, user.pwsalt);
 	st.setString(3, user.name);
 	st.setString(4, user.bio);
-	st.setString(5, user.username);
+	st.setString(5, implode(user.following));
+	st.setString(6, user.username);
 
 	st.execute();
 	int result = st.getUpdateCount();
@@ -126,27 +127,6 @@ public class UserDatabase extends Database {
 	st.setQueryTimeout(TIMEOUT);
 
 	st.setString(1, username);
-
-	st.execute();
-	int result = st.getUpdateCount();
-	return result;
-    }
-
-    /**
-     * Modifies a user's followers.
-     * 
-     * @param user User to modify
-     * @param follow List of users to follow (as strings)
-     * @return number of rows affected
-     * @throws SQLException
-     */
-    public int updateFollowers(String username, List<String> follow)
-	    throws SQLException {
-	String sql = "UPDATE users SET ( followers = ? ) WHERE username = ?";
-	PreparedStatement st = db.prepareStatement(sql);
-
-	st.setString(1, implode(follow));
-	st.setString(2, username);
 
 	st.execute();
 	int result = st.getUpdateCount();
@@ -195,6 +175,9 @@ public class UserDatabase extends Database {
      * @return Comma-separated list
      */
     private static String implode(List<String> str) {
+	if (str == null)
+	    return "";
+	
 	String[] collection = str.toArray(new String[str.size()]);
 
 	StringBuilder result = new StringBuilder();
