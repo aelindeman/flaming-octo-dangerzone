@@ -109,7 +109,6 @@ public class MainWindow extends JFrame {
 		    int row = table.getSelectedRow();
 		    if (row >= 0) {
 			try {
-				System.out.println("Test2");
 			    String user = table.getValueAt(row, 0).toString();
 			    User info = userDB.get(user);
 
