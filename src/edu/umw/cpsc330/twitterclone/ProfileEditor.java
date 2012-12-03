@@ -258,22 +258,26 @@ public class ProfileEditor extends JDialog implements ActionListener {
 	
 	if (arg0.getSource() == addFollow) {
 	    String input = JOptionPane.showInputDialog(panel, "Username to follow:");
-	    if (input.length() > 0) {
-		following.add(input);
-		followList.setListData(following.toArray(new String[following.size()]));
-		followList.repaint();
+	    if (input != null) {
+		if (input.length() > 0) {
+		    following.add(input);
+		    followList.setListData(following.toArray(new String[following.size()]));
+		    followList.repaint();
+		}
 	    }
 	}
 	
 	if (arg0.getSource() == stopFollow) {
-	    String drop = followList.getSelectedValue();
-	    if (drop.length() > 0) {
-		if (following.size() != 0) {
-		    int sure = JOptionPane.showConfirmDialog(panel, "Are you sure you want to stop following " + drop + "?", "Unfollow a user", JOptionPane.YES_NO_OPTION);
-		    if (sure == JOptionPane.YES_OPTION) { 
-			following.remove(drop);
-			followList.setListData(following.toArray(new String[following.size()]));
-			followList.repaint();
+	    if (followList.getSelectedIndex() != -1) {
+		String drop = followList.getSelectedValue();
+		if (drop.length() > 0) {
+		    if (following.size() != 0) {
+			int sure = JOptionPane.showConfirmDialog(panel, "Are you sure you want to stop following " + drop + "?", "Unfollow a user", JOptionPane.YES_NO_OPTION);
+			if (sure == JOptionPane.YES_OPTION) { 
+			    following.remove(drop);
+			    followList.setListData(following.toArray(new String[following.size()]));
+			    followList.repaint();
+			}
 		    }
 		}
 	    }
