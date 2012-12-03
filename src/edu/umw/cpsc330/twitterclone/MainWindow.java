@@ -60,6 +60,9 @@ public class MainWindow extends JFrame {
 	    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	} catch (Exception e) {	}
 	
+	/**
+	 * create and initialize a JFrame object
+	 */
 	frame = new JFrame();
 	frame.setTitle("Public timeline - flaming-octo-dangerzone");
 	frame.setIconImage(Toolkit.getDefaultToolkit().getImage("icon.png"));
@@ -70,7 +73,7 @@ public class MainWindow extends JFrame {
 	frame.add(leftPanel, BorderLayout.LINE_START);
 	
 	try {
-	    postPanel = drawPostPanel(postDB.getAllPublic());
+	    postPanel = drawPostPanel(postDB.getAllPublic());  //populate the list of posts
 	    frame.add(postPanel, BorderLayout.CENTER);
 	} catch (SQLException e) {
 	    String error = "There was an error connecting to the database.\n" + e.getMessage();
@@ -112,7 +115,7 @@ public class MainWindow extends JFrame {
 			    String user = table.getValueAt(row, 0).toString();
 			    User info = userDB.get(user);
 
-			    profileName = info.username;
+			    profileName = info.username;  //stores the username of the profile that is clicked on as profileName
 			    usernameLabel.setText(info.username);
 			    nameLabel.setText(info.name);
 			    bio.setText(info.bio);
@@ -451,6 +454,7 @@ public class MainWindow extends JFrame {
 	return null;
     }
     
+    //copy a the following user list into a temporary list and add the new user to follow
     private int addFollower(String username){
     	List<String> temp = new LinkedList<String>();
     	for(String s: auth.following){
