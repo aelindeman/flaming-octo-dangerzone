@@ -416,6 +416,7 @@ public class MainWindow extends JFrame {
      */
     private List<Post> getFollowedUsersPosts() throws SQLException {
 	List<Post> posts = new LinkedList<Post>();
+	posts.addAll(postDB.getByMention(auth.username));
 	posts.addAll(postDB.getByAuthor(auth.username));
 	for (String u : auth.following) {
 	    List<Post> add = postDB.getByAuthor(u);
