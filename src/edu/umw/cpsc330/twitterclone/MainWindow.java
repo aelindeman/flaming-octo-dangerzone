@@ -370,16 +370,7 @@ public class MainWindow extends JFrame {
 		{
 		    frame.setTitle("Search results for '" + term + "' - flaming-octo-dangerzone");
 		    try {
-			// TODO: just search all public posts for now... bleh
-			List<Post> all = postDB.getAllPublic();
-			List<Post> results = new LinkedList<Post>();
-			
-			for (Post p : all) {
-			    if (p.getContent().contains(term))
-			    {
-				results.add(p);
-			    }
-			}
+			List<Post> results = postDB.getBySearchString(term);
 			redrawTable(results);
 			
 		    } catch (Exception e) { }
